@@ -1,0 +1,38 @@
+# Model Configuration
+model:
+  resnet50:
+    pretrained: true
+    output_dim: 2048
+  vit:
+    pretrained: true
+    output_dim: 768
+  classifier:
+    hidden_dim: 512
+    dropout: 0.5
+    num_classes: 2
+
+# Training Configuration
+training:
+  epochs: 20
+  batch_size: 32
+  learning_rate: 1e-4
+  optimizer: adam
+  scheduler:
+    step_size: 5
+    gamma: 0.1
+
+# Data Configuration
+data:
+  image_size: 224
+  normalize:
+    mean: [0.485, 0.456, 0.406]
+    std: [0.229, 0.224, 0.225]
+
+# LLM Configuration
+llm:
+  model_path: "models/mistral-7b-q4.gguf"
+  n_ctx: 2048
+  n_threads: 4
+  temperature: 0.7
+  top_p: 0.9
+  max_tokens: 150

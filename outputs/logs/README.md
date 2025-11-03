@@ -1,0 +1,3 @@
+# Logs
+
+Training logs will be saved here

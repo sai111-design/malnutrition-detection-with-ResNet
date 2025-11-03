@@ -1,0 +1,11 @@
+# Minimal fixed requirements (no code fences) — pins known to work with Python 3.13
+
+# PyTorch and matching audio/vision libs for Python 3.13
+torch==2.7.1
+torchvision==0.24.0
+torchaudio==2.7.1
+
+# common extras
+numpy==1.26.3
+opencv-python==4.10.0.84
+Pillow==10.1.0

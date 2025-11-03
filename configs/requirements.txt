@@ -1,0 +1,48 @@
+# Updated Requirements - PyTorch 2.7.1 Compatible
+# Updated on November 1, 2025
+# Note: torch==2.0.1 no longer available on PyPI
+# Using PyTorch 2.7.1 (latest stable) - fully backward compatible
+"""
+Updated Requirements - PyTorch 2.7.1 Compatible
+Updated on November 1, 2025
+Note: torch==2.0.1 no longer available on PyPI for Python 3.13
+Using PyTorch 2.7.1 (latest stable) - fully backward compatible
+"""
+
+# Core ML Framework (use --extra-index-url to include PyTorch wheels)
+torch==2.7.1
+torchvision==0.24.0
+torchaudio==2.7.1
+
+# Vision & NLP Models
+timm==0.9.12
+transformers==4.45.0
+
+# Image Processing
+opencv-python==4.10.0.84
+Pillow==10.1.0
+
+# LLM Support
+llama-cpp-python==0.2.80
+
+# Web Interface
+gradio==4.41.0
+
+# Data Processing
+numpy==1.26.3
+pandas==2.2.0
+
+# ML Utilities
+scikit-learn==1.4.0
+matplotlib==3.8.3
+PyYAML==6.0.1
+tqdm==4.66.2
+
+# Dataset Management
+roboflow==1.1.43
+
+# Install notes:
+# - Use PyPI + PyTorch wheel index so non-PyTorch packages come from PyPI
+#   pip install -r configs/requirements.txt --extra-index-url https://download.pytorch.org/whl/cpu
+# - For CUDA builds, replace the extra-index-url with the matching CUDA index
+#   e.g. --extra-index-url https://download.pytorch.org/whl/cu121
