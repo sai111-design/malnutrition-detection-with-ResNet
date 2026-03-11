@@ -11,6 +11,12 @@ import sys
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(project_root)
 
+# Avoid UnicodeEncodeError on Windows consoles using legacy encodings.
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
 import gradio as gr
 import torch
 from torchvision import models, transforms
@@ -42,8 +48,13 @@ if not os.path.exists(model_path):
     print("  python train.py")
     sys.exit(1)
 
+# ResNet-50 with Dropout + Linear classifier head
+# Must match the architecture in training/train_with_labels.py
 detection_model = models.resnet50()
-detection_model.fc = torch.nn.Linear(detection_model.fc.in_features, 2)
+detection_model.fc = torch.nn.Sequential(
+    torch.nn.Dropout(p=0.3),
+    torch.nn.Linear(detection_model.fc.in_features, 2)
+)
 detection_model.load_state_dict(torch.load(model_path, map_location=device))
 detection_model = detection_model.to(device)
 detection_model.eval()
@@ -62,7 +73,11 @@ try:
     if llm and llm.llm is not None:
         print("✓ Mistral 7B LLM loaded successfully")
     else:
-        print("✗ LLM initialization failed - check the error messages above")
+        reason = getattr(llm, "unavailable_reason", None)
+        if reason:
+            print(f"✗ LLM unavailable: {reason}")
+        else:
+            print("✗ LLM initialization failed - check the error messages above")
 except Exception as e:
     import traceback
     print(f"✗ Error loading LLM: {str(e)}")
@@ -128,7 +143,15 @@ def predict_and_advise(image):
                 print(f"Error generating advisory: {str(e)}")
                 advisory = "Error generating health advisory. Please try again."
         else:
-            advisory = "LLM not available. Please ensure:\n1. Mistral model file exists in models/ directory\n2. llama-cpp-python is installed correctly\n3. Sufficient system memory is available"
+            reason = getattr(llm, "unavailable_reason", None) if llm else None
+            advisory = (
+                f"LLM not available: {reason}\n\n"
+                "Please ensure:\n"
+                "1. Mistral model file exists in models/ directory\n"
+                "2. llama-cpp-python is installed in this environment\n"
+                "3. Python version is 3.10-3.12 for llama-cpp-python compatibility\n"
+                "4. Sufficient system memory is available"
+            )
 
         # Format advisory
         formatted_advisory = f"{emoji}\n{advisory}"
@@ -165,6 +188,9 @@ def answer_question(question):
         except Exception as e:
             return f"Error generating answer: {str(e)}"
     else:
+        reason = getattr(llm, "unavailable_reason", None) if llm else None
+        if reason:
+            return f"LLM not available: {reason}"
         return "LLM not available. Please check Mistral 7B installation."
 
 # ============================================================================
@@ -355,9 +381,15 @@ if __name__ == "__main__":
     print("\n" + "="*70 + "\n")
 
     # Launch the interface
-    demo.launch(
-        server_name="127.0.0.1",
-        server_port=7860,
-        share=False,
-        show_error=True
-    )
+    demo.queue(max_size=20)  # Enable queuing with max 20 concurrent users
+    
+    try:
+        # Try to launch on default port first
+        demo.launch(server_port=7860, share=True, show_error=True)
+    except OSError:
+        try:
+            # If default port is busy, try alternate port
+            demo.launch(server_port=8080, share=True, show_error=True)
+        except OSError:
+            # If both ports are busy, let Gradio choose an available port
+            demo.launch(server_port=None, share=True, show_error=True)

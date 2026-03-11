@@ -1,0 +1,31 @@
+{
+    "seed": 42,
+    "batch_size": 8,
+    "num_epochs": 25,
+    "learning_rate": 0.0001,
+    "weight_decay": 0.0001,
+    "label_smoothing": 0.1,
+    "patience": 10,
+    "unfreeze_epoch": 3,
+    "dropout_rate": 0.3,
+    "optimizer": "Adam",
+    "scheduler": "CosineAnnealingLR",
+    "model": "ResNet-50",
+    "pretrained_weights": "IMAGENET1K_V1",
+    "input_size": 224,
+    "num_classes": 2,
+    "device": "cpu",
+    "data": {
+        "train_total": 59,
+        "train_healthy": 33,
+        "train_malnourished": 26,
+        "val_total": 25,
+        "val_healthy": 9,
+        "val_malnourished": 16
+    },
+    "model_params": {
+        "total": 23512130,
+        "trainable_initial": 22067202,
+        "frozen_initial": 1444928
+    }
+}

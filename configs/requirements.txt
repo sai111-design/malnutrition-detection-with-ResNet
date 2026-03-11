@@ -2,12 +2,6 @@
 # Updated on November 1, 2025
 # Note: torch==2.0.1 no longer available on PyPI
 # Using PyTorch 2.7.1 (latest stable) - fully backward compatible
-"""
-Updated Requirements - PyTorch 2.7.1 Compatible
-Updated on November 1, 2025
-Note: torch==2.0.1 no longer available on PyPI for Python 3.13
-Using PyTorch 2.7.1 (latest stable) - fully backward compatible
-"""
 
 # Core ML Framework (use --extra-index-url to include PyTorch wheels)
 torch==2.7.1

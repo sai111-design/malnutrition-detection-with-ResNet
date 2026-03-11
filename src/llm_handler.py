@@ -7,14 +7,17 @@ clear messages when a model or llama-cpp-python is missing.
 """
 
 import os
+import sys
 from typing import Optional, List
 
 try:
     from llama_cpp import Llama  # type: ignore
     _HAS_LLAMA = True
-except Exception:
+    _LLAMA_IMPORT_ERROR = None
+except Exception as exc:
     Llama = None
     _HAS_LLAMA = False
+    _LLAMA_IMPORT_ERROR = str(exc)
 
 
 class MistralLLMHandler:
@@ -36,6 +39,7 @@ class MistralLLMHandler:
     def __init__(self, model_path: Optional[str] = None):
         self.llm = None
         self.model_path = model_path
+        self.unavailable_reason: Optional[str] = None
 
         # Determine model path if not provided
         if not self.model_path:
@@ -44,10 +48,12 @@ class MistralLLMHandler:
         if not self.model_path:
             # No model found; print helpful diagnostics and leave llm as None
             self._print_model_help()
+            self.unavailable_reason = "No .gguf model file found in models/."
             return
 
         if not _HAS_LLAMA or Llama is None:
-            print("llama-cpp-python not installed or failed to import. Install with: pip install llama-cpp-python")
+            self.unavailable_reason = self._build_llama_import_help()
+            print(self.unavailable_reason)
             return
 
         # Load model
@@ -65,7 +71,19 @@ class MistralLLMHandler:
             print(f"Error loading Mistral model: {str(e)}")
             import traceback
             print(f"Detailed error: {traceback.format_exc()}")
+            self.unavailable_reason = f"Failed to load GGUF model: {e}"
             self.llm = None
+
+    def _build_llama_import_help(self) -> str:
+        parts = [
+            "llama-cpp-python is not available in this environment.",
+        ]
+        if _LLAMA_IMPORT_ERROR:
+            parts.append(f"Import error: {_LLAMA_IMPORT_ERROR}")
+        py_ver = f"{sys.version_info.major}.{sys.version_info.minor}"
+        parts.append(f"Detected Python: {py_ver}")
+        parts.append("Fix: use Python 3.10-3.12 and install `llama-cpp-python`, then restart the app.")
+        return " ".join(parts)
 
     def _find_model_file(self, possible_paths: List[str]) -> Optional[str]:
         """Return the first existing path from possible_paths, or search models/ for any .gguf file."""
@@ -120,6 +138,8 @@ class MistralLLMHandler:
     def answer_question(self, question: str) -> str:
         """Answer a user question using the LLM or return a helpful fallback."""
         if self.llm is None:
+            if self.unavailable_reason:
+                return f"LLM not available: {self.unavailable_reason}"
             return "LLM not available. Install llama-cpp-python and place a .gguf model in the models/ directory."
 
         try:
@@ -147,5 +167,3 @@ def get_llm() -> MistralLLMHandler:
     if _LLM_INSTANCE is None:
         _LLM_INSTANCE = MistralLLMHandler()
     return _LLM_INSTANCE
-
-

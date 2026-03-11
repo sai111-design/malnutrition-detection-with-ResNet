@@ -7,6 +7,16 @@ Tests the LLM handler to ensure Mistral 7B is working correctly
 import sys
 import os
 
+# Ensure project root is importable when running from organise/
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(project_root)
+
+# Avoid UnicodeEncodeError on Windows consoles using legacy encodings.
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
 print("\n" + "="*70)
 print("Testing Mistral 7B Integration")
 print("="*70)
@@ -24,7 +34,11 @@ try:
     print("\nStep 2: Loading Mistral 7B model...")
     print("(This may take 3-5 seconds on first run)")
     llm = get_llm()
-    print("✓ Model loaded successfully")
+    if llm and llm.llm is not None:
+        print("✓ Model loaded successfully")
+    else:
+        reason = getattr(llm, "unavailable_reason", "Unknown initialization failure")
+        print(f"⚠ LLM backend unavailable: {reason}")
 except Exception as e:
     print(f"✗ Model loading failed: {e}")
     print("Make sure the model file exists at: models/mistral-7b-instruct-v0.2.Q4_K_M.gguf")

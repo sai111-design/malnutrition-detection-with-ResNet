@@ -1,0 +1,21 @@
+# Python virtual environments
+myenv/
+env/
+venv/
+.venv/
+
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+
+# Model weights
+models/*.pth
+models/*.gguf
+
+# IDEs
+.idea/
+.vscode/
+
+# Other environment specifics
+.env
